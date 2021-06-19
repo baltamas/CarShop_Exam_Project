@@ -22,7 +22,11 @@ namespace CarShop.Controllers
             _context = context;
         }
 
-
+        /// <summary>
+        /// Returns cars with a minimum price
+        /// </summary>
+        /// <param name="minPrice"></param>
+        /// <returns>A list of cars with price >= by the give minprice</returns>
         // GET: api/Cars
         [HttpGet]
         [Route("filterCarPrice/{minPrice}")]

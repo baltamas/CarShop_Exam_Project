@@ -1,0 +1,28 @@
+<h1 id="tableLabel">Sellable Cars</h1>
+
+<p>This component lists the cars.</p>
+
+<p *ngIf="!cars"><em>Loading...</em></p>
+
+<table class='table table-striped' aria-labelledby="tableLabel" *ngIf="cars">
+  <thead>
+    <tr>
+      <th>Id</th>
+      <th>Name</th>
+      <th>Description</th>
+      <th>Price</th>
+      <th>MileAge</th>
+      <th>Year</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr *ngFor="let car of cars">
+      <td>{{ car.id }}</td>
+      <td>{{ car.name }}</td>
+      <td>{{ car.description }}</td>
+      <td>{{ car.price }}</td>
+      <td>{{ car.mileAge }}</td>
+      <td>{{ car.year }}</td>
+    </tr>
+  </tbody>
+</table>

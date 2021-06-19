@@ -13,6 +13,7 @@ namespace CarShop.Models
         public double Price { get; set; }
         public int MileAge { get; set; }
         public int Year { get; set; }
+        public List<Review> Reviews { get; set; }
 
     }
 }

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using CarShop.Data;
 using CarShop.Models;
 using CarShop.ViewModels;
+using Microsoft.Extensions.Logging;
 
 namespace CarShop.Controllers
 {
@@ -16,10 +17,12 @@ namespace CarShop.Controllers
     public class CarsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
+        private readonly ILogger<CarsController> _logger;
 
-        public CarsController(ApplicationDbContext context)
+        public CarsController(ApplicationDbContext context, ILogger<CarsController> logger)
         {
             _context = context;
+            _logger = logger;
         }
 
         /// <summary>
@@ -32,6 +35,8 @@ namespace CarShop.Controllers
         [Route("filterCarPrice/{minPrice}")]
         public ActionResult<IEnumerable<Car>> FilterMinPrice(int minPrice)
         {
+            var query = _context.Cars.Where(c => c.Price >= minPrice);
+            _logger.LogInformation(query.ToQueryString());
             return _context.Cars.Where(c => c.Price >= minPrice).ToList();
 
         }
@@ -127,5 +132,34 @@ namespace CarShop.Controllers
         {
             return _context.Cars.Any(e => e.Id == id);
         }
+
+        //Controller for reviews!
+        [HttpGet("{id}/Reviews")]
+        public ActionResult<IEnumerable<Object>> GetReviewForCar(int id)
+        {
+            var query = _context.Reviews.Where(r => r.Car.Id == id).Include(r => r.Car).Select(r => new
+            {
+                Car = r.Car.Name,
+                Review = r.Content
+            });
+            _logger.LogInformation(query.ToQueryString());
+            return query.ToList();
+        }
+
+        [HttpPost("{id}/Reviews")]
+        public IActionResult PostReviewForCar (int id, Review review)
+        {
+            review.Car = _context.Cars.Find(id);
+            if(review.Car == null)
+            {
+                return NotFound();
+            }
+            _context.Reviews.Add(review);
+            _context.SaveChanges();
+
+            return Ok();
+        }
     }
 }
+
+    

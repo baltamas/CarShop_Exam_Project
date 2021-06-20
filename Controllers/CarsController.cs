@@ -149,23 +149,78 @@ namespace CarShop.Controllers
                     DateTime = cr.DateTime
                 })
             });
+
+           
             var query_v2 = _context.Cars.Where(c => c.Id == id).Include(c=> c.Reviews).Select(c => _mapper.Map<CarWithReviewViewModel>(c));
              _logger.LogInformation(query.ToQueryString());
+
+            var queryForReviewCarId = _context.Reviews;
+            _logger.LogInformation(queryForReviewCarId.ToList()[0].CarId.ToString());
+
             return query_v2.ToList();
         }
 
         [HttpPost("{id}/Reviews")]
         public IActionResult PostReviewForCar (int id, Review review)
         {
-            review.Car = _context.Cars.Find(id);
-            if(review.Car == null)
+            var car = _context.Cars.Where(c => c.Id == id).Include(c => c.Reviews).FirstOrDefault();
+            if (car == null)
+            {
+                return NotFound();
+
+            }
+            car.Reviews.Add(review);
+            _context.Entry(car).State = EntityState.Modified;
+            _context.SaveChanges();
+            return Ok();
+        }
+
+        [HttpPut("{id}/Reviews/{ReviewId}")]
+        public async Task<IActionResult> PutReview(int reviewId, ReviewViewModel review )
+        {
+            if (reviewId != review.Id)
+            {
+                return BadRequest();
+            }
+
+            _context.Entry(_mapper.Map<Review>(review)).State = EntityState.Modified;
+
+            try
+            {
+                await _context.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                if (!ReviewExists(reviewId))
+                {
+                    return NotFound();
+                }
+                else
+                {
+                    throw;
+                }
+            }
+
+            return NoContent();
+        }
+
+        [HttpDelete("{id}/Comments/{commentId}")]
+        public async Task<IActionResult> DeleteReview(int reviewId)
+        {
+            var review = await _context.Reviews.FindAsync(reviewId);
+            if (review == null)
             {
                 return NotFound();
             }
-            _context.Reviews.Add(review);
-            _context.SaveChanges();
 
-            return Ok();
+            _context.Reviews.Remove(review);
+            await _context.SaveChangesAsync();
+
+            return NoContent();
+        }
+        private bool ReviewExists(int id)
+        {
+            return _context.Reviews .Any(c => c.Id == id);
         }
     }
 }

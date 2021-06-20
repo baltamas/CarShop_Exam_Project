@@ -11,5 +11,6 @@ namespace CarShop.Models
         public string Content { get; set; }
         public DateTime DateTime { get; set; }
         public Car Car { get; set; }
+        public int CarId { get; set; }
     }
 }

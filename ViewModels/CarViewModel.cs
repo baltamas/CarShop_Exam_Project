@@ -1,4 +1,5 @@
-﻿using System;
+﻿using CarShop.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -13,5 +14,6 @@ namespace CarShop.ViewModels
         public double Price { get; set; }
         public int MileAge { get; set; }
         public int Year { get; set; }
+        public CarFuelType CarFuelType { get; set; }
     }
 }

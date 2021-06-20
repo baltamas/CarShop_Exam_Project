@@ -9,6 +9,7 @@ using CarShop.Data;
 using CarShop.Models;
 using CarShop.ViewModels;
 using Microsoft.Extensions.Logging;
+using AutoMapper;
 
 namespace CarShop.Controllers
 {
@@ -18,11 +19,13 @@ namespace CarShop.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly ILogger<CarsController> _logger;
+        private readonly IMapper _mapper;
 
-        public CarsController(ApplicationDbContext context, ILogger<CarsController> logger)
+        public CarsController(ApplicationDbContext context, ILogger<CarsController> logger, IMapper mapper)
         {
             _context = context;
             _logger = logger;
+            _mapper = mapper;
         }
 
         /// <summary>
@@ -52,20 +55,14 @@ namespace CarShop.Controllers
         [HttpGet("{id}")]
         public async Task<ActionResult<CarViewModel>> GetCar(int id)
         {
-            var car = await _context.Cars.FindAsync(id);
-            var carViewModel = new CarViewModel
-            {
-                Name = car.Name,
-                Description = car.Description,
-                Price = car.Price,
-                MileAge = car.MileAge,
-                Year = car.Year,
-            };
+            var car = await _context.Cars.FindAsync(id); 
 
             if (car == null)
             {
                 return NotFound();
             }
+
+            var carViewModel = _mapper.Map<CarViewModel>(car);
 
             return carViewModel;
         }
@@ -135,15 +132,26 @@ namespace CarShop.Controllers
 
         //Controller for reviews!
         [HttpGet("{id}/Reviews")]
-        public ActionResult<IEnumerable<Object>> GetReviewForCar(int id)
+        public ActionResult<IEnumerable<CarWithReviewViewModel>> GetReviewForCar(int id)
         {
-            var query = _context.Reviews.Where(r => r.Car.Id == id).Include(r => r.Car).Select(r => new
+            var query = _context.Reviews.Where(r => r.Car.Id == id).Include(r => r.Car).Select(r => new CarWithReviewViewModel
             {
-                Car = r.Car.Name,
-                Review = r.Content
+                Id = r.Car.Id,
+                Name = r.Car.Name,
+                Description = r.Car.Description,
+                Price = r.Car.Price,
+                MileAge = r.Car.MileAge,
+                Year = r.Car.Year,
+                Reviews = r.Car.Reviews.Select(cr => new ReviewViewModel
+                {
+                    Id = cr.Id,
+                    Content = cr.Content,
+                    DateTime = cr.DateTime
+                })
             });
-            _logger.LogInformation(query.ToQueryString());
-            return query.ToList();
+            var query_v2 = _context.Cars.Where(c => c.Id == id).Include(c=> c.Reviews).Select(c => _mapper.Map<CarWithReviewViewModel>(c));
+             _logger.LogInformation(query.ToQueryString());
+            return query_v2.ToList();
         }
 
         [HttpPost("{id}/Reviews")]

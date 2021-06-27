@@ -5,7 +5,7 @@ using CarShop.ViewModels.Authentication;
 using System.Threading.Tasks;
 using CarShop.Services.AuthenticationService;
 
-namespace CarShop.Controllers
+namespace MultimediaCenter.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

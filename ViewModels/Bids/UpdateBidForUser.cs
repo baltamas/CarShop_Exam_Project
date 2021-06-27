@@ -5,10 +5,11 @@ using System.Threading.Tasks;
 
 namespace CarShop.ViewModels.Bids
 {
-    public class BidForUserResponse
+    public class UpdateBidForUser
     {
-        public ApplicationUserViewModel ApplicationUser { get; set; }
-        public List<CarViewModel> Cars { get; set; }
+        public int Id { get; set; }
+        public ApplicationUserViewModel User { get; set; }
+        public List<int> CarIds { get; set; }
         public double BidAmount { get; set; }
         public DateTime BidDateTime { get; set; }
     }

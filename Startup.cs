@@ -16,6 +16,11 @@ using System;
 using System.IO;
 using System.Reflection;
 using AutoMapper;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using CarShop.Services.AuthenticationService;
+using CarShop.Services.BidService;
+using CarShop.Services;
 
 namespace CarShop
 {
@@ -46,7 +51,21 @@ namespace CarShop
                 .AddApiAuthorization<ApplicationUser, ApplicationDbContext>();
 
             services.AddAuthentication()
-                .AddIdentityServerJwt();
+                .AddIdentityServerJwt()
+                .AddJwtBearer(options =>
+                {
+                    options.SaveToken = true;
+                    options.RequireHttpsMetadata = true;
+                    options.TokenValidationParameters = new TokenValidationParameters()
+                    {
+                        ValidateIssuer = true,
+                        ValidateAudience = true,
+                        ValidAudience = Configuration["Jwt:Site"],
+                        ValidIssuer = Configuration["Jwt:Site"],
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Configuration["Jwt:SigningKey"]))
+                    };
+                });
+
             services.AddControllersWithViews().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
             services.AddRazorPages();
             // In production, the Angular files will be served from this directory
@@ -78,8 +97,9 @@ namespace CarShop
                 var xmlPath = Path.Combine(AppContext.BaseDirectory, xmlFile);
                 c.IncludeXmlComments(xmlPath);
             });
-           
 
+            services.AddTransient<IAuthManagementService, AuthManagementService>();
+            services.AddTransient<IBidManagementService, BidManagementService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

@@ -15,13 +15,13 @@ namespace CarShop.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class CarsController : ControllerBase
+    public class CarsAndReviewsController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly ILogger<CarsController> _logger;
+        private readonly ILogger<CarsAndReviewsController> _logger;
         private readonly IMapper _mapper;
 
-        public CarsController(ApplicationDbContext context, ILogger<CarsController> logger, IMapper mapper)
+        public CarsAndReviewsController(ApplicationDbContext context, ILogger<CarsAndReviewsController> logger, IMapper mapper)
         {
             _context = context;
             _logger = logger;

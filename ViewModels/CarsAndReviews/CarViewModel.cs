@@ -1,12 +1,12 @@
-﻿using System;
+﻿using CarShop.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace CarShop.Models
+namespace CarShop.ViewModels.Cars
 {
-    public enum CarFuelType { Gasoline, Diesel, BioDiesel, Ethanol, Other };
-    public class Car
+    public class CarViewModel
     {
         public int Id { get; set; }
         public string Name { get; set; }
@@ -15,9 +15,5 @@ namespace CarShop.Models
         public int MileAge { get; set; }
         public int Year { get; set; }
         public CarFuelType CarFuelType { get; set; }
-        public List<Review> Reviews { get; set; }
-        public List<Bid> Bids { get; set; }
-        public double StartingBid { get; set; }
-        public string Color { get; set; }
     }
 }

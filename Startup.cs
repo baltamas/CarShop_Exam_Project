@@ -21,6 +21,7 @@ using System.Text;
 using CarShop.Services.AuthenticationService;
 using CarShop.Services.BidService;
 using CarShop.Services;
+using CarShop.Services.CarAndReviewService;
 
 namespace CarShop
 {
@@ -100,6 +101,7 @@ namespace CarShop
 
             services.AddTransient<IAuthManagementService, AuthManagementService>();
             services.AddTransient<IBidManagementService, BidManagementService>();
+            services.AddTransient<ICarAndReviewManagementService, CarAndReviewManagementService>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

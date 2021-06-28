@@ -14,134 +14,110 @@ namespace CarShop.Services.BidService
 {
     public class BidManagementService : IBidManagementService
     {
-        private readonly ApplicationDbContext _context;
-        private readonly IMapper _mapper;
-        private readonly UserManager<ApplicationUser> _userManager;
+		public ApplicationDbContext _context;
+		public BidManagementService(ApplicationDbContext context)
+		{
+			_context = context;
+		}
 
-        public BidManagementService(ApplicationDbContext context, IMapper mapper, UserManager<ApplicationUser> userManager)
-        {
-            _context = context;
-            _mapper = mapper;
-            _userManager = userManager;
-        }
+		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> CreateBids(string userId, NewBidRequest newBidRequest)
+		{
+			List<Car> cars = new List<Car>();
 
-        public async Task<ServiceResponse<BidForUserResponse, IEnumerable<EntityError>>> GetAll(ApplicationUser user)
-        {
-            var bidFromDb = await _context.Bids
-                .Where(b => b.ApplicationUser.Id == user.Id)
-                .Include(b => b.Cars)
-                .FirstOrDefaultAsync();
+			newBidRequest.BidCarIds.ForEach(cid =>
+			{
+				var car = _context.Cars.Find(cid);
+				if (car != null)
+				{
+					cars.Add(car);
+				}
+			});
 
-            var bidForUserResponse = _mapper.Map<BidForUserResponse>(bidFromDb);
+			var bid = new Bid
+			{
+				UserId = userId,
+				Cars = cars,
+				BidAmount = newBidRequest.BidAmount,
+				BidDateTime = newBidRequest.BidDateTime
+			};
 
-            var serviceResponse = new ServiceResponse<BidForUserResponse, IEnumerable<EntityError>>();
-            serviceResponse.ResponseOk = bidForUserResponse;
+			_context.Bids.Add(bid);
+			var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
 
-            return serviceResponse;
-        }
+			try
+			{
+				await _context.SaveChangesAsync();
+				serviceResponse.ResponseOk = bid;
+			}
+			catch (Exception e)
+			{
+				var errors = new List<EntityError>();
+				errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
+			}
 
-        public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> PlaceBid(NewBidRequest newBidRequest, ApplicationUser user)
-        {
-            var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
+			return serviceResponse;
+		}
 
-            var bidCars = new List<Car>();
-            newBidRequest.ReservedCarIds.ForEach(bid =>
-            {
-                var carWithId = _context.Cars.Find(bid);
-                if (carWithId != null)
-                {
-                    bidCars.Add(carWithId);
-                }
-            });
+		public async Task<ServiceResponse<List<Bid>, IEnumerable<EntityError>>> GetBids(string userId)
+		{
+			var result = await _context.Bids.Where(b => b.ApplicationUser.Id == userId).Include(b => b.Cars).OrderByDescending(c => c.BidAmount).ToListAsync();
+			var serviceResponse = new ServiceResponse<List<Bid>, IEnumerable<EntityError>>();
+			serviceResponse.ResponseOk = result;
+			return serviceResponse;
+		}
 
-            var bid = new Bid
-            {
-                ApplicationUser = user,
-                Cars = bidCars,
-                BidAmount = newBidRequest.BidAmount,
-                BidDateTime = newBidRequest.BidDateTime,
-            };
+		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBids(Bid bids, UpdateBidForUser updateBidForUser)
+		{
+			bids.Cars = await _context.Cars.Where(c => updateBidForUser.CarIds.Contains(c.Id)).ToListAsync();
+			_context.Entry(bids).State = EntityState.Modified;
+			var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
 
-            _context.Bids.Add(bid);
+			try
+			{
+				await _context.SaveChangesAsync();
+				serviceResponse.ResponseOk = bids;
+			}
+			catch (Exception e)
+			{
+				var errors = new List<EntityError>();
+				errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
+			}
 
-            try
-            {
-                await _context.SaveChangesAsync();
-                serviceResponse.ResponseOk = bid;
-            }
-            catch (Exception e)
-            {
-                var errors = new List<EntityError>();
-                errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
-            }
+			return serviceResponse;
+		}
 
-            return serviceResponse;
-        }
+		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> GetBid(string userId, int id)
+		{
+			var result = await _context.Bids.Where(b => b.Id == id && b.ApplicationUser.Id == userId).FirstOrDefaultAsync();
+			var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
+			serviceResponse.ResponseOk = result;
+			return serviceResponse;
+		}
 
-        public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBid(int id, NewBidRequest updateBidRequest, ApplicationUser user)
-        {
-            var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
+		public async Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteBids(int id)
+		{
+			var serviceResponse = new ServiceResponse<bool, IEnumerable<EntityError>>();
 
-            var bidCars = new List<Car>();
-            updateBidRequest.ReservedCarIds.ForEach(bid =>
-            {
-                var carWithId = _context.Cars.Find(bid);
-                if (carWithId != null)
-                {
-                    bidCars.Add(carWithId);
-                }
-            });
+			try
+			{
+				var bid = await _context.Bids.FindAsync(id);
+				_context.Bids.Remove(bid);
+				await _context.SaveChangesAsync();
+				serviceResponse.ResponseOk = true;
+			}
+			catch (Exception e)
+			{
+				var errors = new List<EntityError>();
+				errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
+			}
 
-            var bid = new Bid
-            {
-                Id = id,
-                ApplicationUser = user,
-                BidDateTime = updateBidRequest.BidDateTime,
-                BidAmount = updateBidRequest.BidAmount,
-                Cars = bidCars
-            };
+			return serviceResponse;
+		}
 
-            _context.Entry(bid).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-                serviceResponse.ResponseOk = bid;
-            }
-            catch (Exception e)
-            {
-                var errors = new List<EntityError>();
-                errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
-            }
-
-            return serviceResponse;
-        }
-
-        public async Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteBid(int id)
-        {
-            var serviceResponse = new ServiceResponse<bool, IEnumerable<EntityError>>();
-
-            try
-            {
-                var bid = await _context.Bids.FindAsync(id);
-                _context.Bids.Remove(bid);
-                await _context.SaveChangesAsync();
-                serviceResponse.ResponseOk = true;
-            }
-            catch (Exception e)
-            {
-                var errors = new List<EntityError>();
-                errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
-                serviceResponse.ResponseError = errors;
-            }
-
-            return serviceResponse;
-        }
-
-        public bool BidExists(int id)
-        {
-            return _context.Bids.Any(e => e.Id == id);
-        }
-    }
+		public bool BidsExists(string userId, int bidsId)
+		{
+			return _context.Bids.Any(e => e.Id == bidsId && e.ApplicationUser.Id == userId);
+		}
+	}
 }
 

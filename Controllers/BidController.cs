@@ -17,145 +17,103 @@ using CarShop.ViewModels.Bids;
 
 namespace CarShop.Controllers
 {
-    [Authorize(AuthenticationSchemes = "Identity.Application, Bearer")]
     [ApiController]
     [Route("api/[controller]")]
-    public class BidController : ControllerBase
+    [Authorize(AuthenticationSchemes = "Identity.Application,Bearer")]
+    public class BidsController : ControllerBase
     {
-        private readonly IBidManagementService _bidManagementService;
+        private readonly IMapper _mapper;
         private readonly UserManager<ApplicationUser> _userManager;
+        private readonly IBidManagementService _bidManagementService;
 
-        public BidController(IBidManagementService bidManagementService, UserManager<ApplicationUser> userManager)
+        public BidsController(
+            IMapper mapper,
+            UserManager<ApplicationUser> userManager,
+            IBidManagementService bidManagementService
+        )
         {
-            _bidManagementService = bidManagementService;
+            _mapper = mapper;
             _userManager = userManager;
+            _bidManagementService = bidManagementService;
         }
 
-        /// <summary>
-        /// Adds a new reservation
-        /// </summary>
-        /// <response code="201">Adds a new reservation</response>
-        /// <response code="400">Unable to add the reservation</response>
-        [ProducesResponseType(StatusCodes.Status201Created)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [Authorize(AuthenticationSchemes = "Identity.Application, Bearer")]
-        [HttpPost]
-        public async Task<ActionResult> PlaceReservation(NewBidRequest newBidRequest)
-        {
-            var user = new ApplicationUser();
-            try
-            {
-                user = await _userManager?.FindByNameAsync(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            }
-            catch (ArgumentNullException)
-            {
-                return Unauthorized("Please login!");
-            }
-
-            var bidServiceResult = await _bidManagementService.PlaceBid(newBidRequest, user);
-            if (bidServiceResult.ResponseError != null)
-            {
-                return BadRequest(bidServiceResult.ResponseError);
-            }
-
-            var bid = bidServiceResult.ResponseOk;
-
-            return CreatedAtAction("GetBids", new { id = bid.Id }, "New bid successfully placed");
-        }
-
-
-        /// <summary>
-        /// Get all reservations
-        /// </summary>
-        /// <response code="200">Get All Reservations</response>
-        /// <summary>
-        /// Get all reservations
-        /// </summary>
-        /// <response code="200">Get All Reservations</response>
-        [ProducesResponseType(StatusCodes.Status200OK)]
-        [Authorize(AuthenticationSchemes = "Identity.Application, Bearer")]
         [HttpGet]
-        public async Task<ActionResult> GetAll()
+        public async Task<ActionResult<IEnumerable<BidForUserResponse>>> GetAll()
         {
-            var user = new ApplicationUser();
-            try
-            {
-                user = await _userManager?.FindByNameAsync(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            }
-            catch (ArgumentNullException)
-            {
-                return Unauthorized("You have to login!");
-            }
+            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
 
-            var bidServiceResult = await _bidManagementService.GetAll(user);
-
-            return Ok(bidServiceResult.ResponseOk);
-        }
-
-        /// <summary>
-        /// Edit a reservation
-        /// </summary>
-        /// <response code="204">Update a reservation</response>
-        /// <response code="400">Unable to update the reservation</response>
-        /// <response code="404">Reservation not found</response>
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(AuthenticationSchemes = "Identity.Application, Bearer")]
-        [HttpPut("{id}")]
-        public async Task<IActionResult> UpdateBid(int id, NewBidRequest updateBidRequest)
-        {
-            var user = new ApplicationUser();
-            try
-            {
-                user = await _userManager?.FindByNameAsync(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            }
-            catch (ArgumentNullException)
-            {
-                return Unauthorized("You have to login!");
-            }
-
-            var bidServiceResult = await _bidManagementService.UpdateBid(id, updateBidRequest, user);
-            if (bidServiceResult.ResponseError != null)
-            {
-                return BadRequest(bidServiceResult.ResponseError);
-            }
-
-            return NoContent();
-        }
-
-        /// <summary>
-        /// Delete a reservation by the given id
-        /// </summary>
-        /// <response code="204">Deletes a reservation</response>
-        /// <response code="404">Reservation not found</response>
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(StatusCodes.Status404NotFound)]
-        [Authorize(AuthenticationSchemes = "Identity.Application, Bearer")]
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBid(int id)
-        {
-            try
-            {
-                var user = await _userManager?.FindByNameAsync(User?.FindFirst(ClaimTypes.NameIdentifier)?.Value);
-            }
-            catch (ArgumentNullException)
-            {
-                return Unauthorized("You have to login!");
-            }
-
-            if (!_bidManagementService.BidExists(id))
+            if (user == null)
             {
                 return NotFound();
             }
 
-            var bidServiceResult = await _bidManagementService.DeleteBid(id);
-            if (bidServiceResult.ResponseError != null)
+            var serviceResponse = await _bidManagementService.GetBids(user.Id);
+            var bids = serviceResponse.ResponseOk;
+
+            return _mapper.Map<List<Bid>, List<BidForUserResponse>>(bids);
+        }
+
+        [HttpPost]
+        public async Task<ActionResult> CreateBids(string userId, NewBidRequest newBidRequest)
+        {
+            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var serviceResponse = await _bidManagementService.CreateBids(user.Id, newBidRequest);
+
+            if (serviceResponse.ResponseError == null)
             {
-                return BadRequest(bidServiceResult.ResponseError);
+                return Ok();
             }
 
-            return NoContent();
+            return StatusCode(500);
+        }
+
+        [HttpPut]
+        public async Task<ActionResult> UpdateFavourites(UpdateBidForUser updateBidForUser)
+        {
+            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var bidsWithIdResponse = await _bidManagementService.GetBid(user.Id, updateBidForUser.Id);
+
+            Bid bids = bidsWithIdResponse.ResponseOk;
+
+            if (bids == null)
+            {
+                return BadRequest("There is no bids list with this ID.");
+            }
+
+            var serviceResponse = await _bidManagementService.UpdateBids(bids, updateBidForUser);
+
+            if (serviceResponse.ResponseError == null)
+            {
+                return Ok();
+            }
+
+            return StatusCode(500);
+        }
+
+        [HttpDelete("{id}")]
+        public async Task<IActionResult> DeleteBids(int id)
+        {
+            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
+
+            var bidsResponse = await _bidManagementService.GetBid(user.Id, id);
+            var bids = bidsResponse.ResponseOk;
+
+            if (bids == null)
+            {
+                return NotFound();
+            }
+
+            var result = await _bidManagementService.DeleteBids(id);
+
+            if (result.ResponseError == null)
+            {
+                return NoContent();
+            }
+
+
+            return StatusCode(500);
         }
     }
 

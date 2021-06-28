@@ -9,6 +9,7 @@ namespace CarShop.Models
     {
         public int Id { get; set; }
         public ApplicationUser ApplicationUser { get; set; }
+        public string UserId { get; set; }
         public IEnumerable<Car> Cars { get; set; }
         public double BidAmount { get; set; }
         public DateTime BidDateTime { get; set; }

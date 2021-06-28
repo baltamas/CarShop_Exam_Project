@@ -10,14 +10,11 @@ namespace CarShop.Services.BidService
 {
     public interface IBidManagementService 
     {
-        Task<ServiceResponse<Bid, IEnumerable<EntityError>>> PlaceBid (NewBidRequest newBidRequest, ApplicationUser user);
-
-        Task<ServiceResponse<BidForUserResponse, IEnumerable<EntityError>>> GetAll(ApplicationUser user);
-
-        Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBid(int id, NewBidRequest updateBidRequest, ApplicationUser user);
-
-        Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteBid(int id);
-
-        bool BidExists(int id);
-    }
+		Task<ServiceResponse<List<Bid>, IEnumerable<EntityError>>> GetBids(string userId);
+		Task<ServiceResponse<Bid, IEnumerable<EntityError>>> GetBid(string userId, int id);
+		Task<ServiceResponse<Bid, IEnumerable<EntityError>>> CreateBids(string userId, NewBidRequest newBidRequest);
+		Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBids(Bid bids, UpdateBidForUser updateBidForUser);
+		Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteBids(int id);
+		bool BidsExists(string userId, int favouritesId);
+	}
 }

@@ -4,14 +4,16 @@ using CarShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace CarShop.Data.Migrations
+namespace CarShop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210629083714_AddedBids")]
+    partial class AddedBids
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -115,6 +117,9 @@ namespace CarShop.Data.Migrations
                     b.Property<DateTime>("BidDateTime")
                         .HasColumnType("datetime2");
 
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
@@ -129,8 +134,17 @@ namespace CarShop.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("BidEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("BidStart")
+                        .HasColumnType("datetime2");
+
                     b.Property<int>("CarFuelType")
                         .HasColumnType("int");
+
+                    b.Property<bool>("CarSold")
+                        .HasColumnType("bit");
 
                     b.Property<string>("Color")
                         .HasColumnType("nvarchar(max)");

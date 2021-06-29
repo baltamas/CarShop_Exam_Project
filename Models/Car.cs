@@ -18,6 +18,10 @@ namespace CarShop.Models
         public List<Review> Reviews { get; set; }
         public List<Bid> Bids { get; set; }
         public double StartingBid { get; set; }
+        public DateTime BidStart { get; set; }
+        public DateTime BidEnd{ get; set; }
+        public bool CarSold { get; set; }
         public string Color { get; set; }
+        public string Engine { get; set; }
     }
 }

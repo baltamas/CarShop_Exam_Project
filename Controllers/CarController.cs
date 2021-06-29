@@ -33,13 +33,8 @@ namespace CarShop.Controllers
 		}
 
 		/// <summary>
-		/// Retrieves a list of movies.
-		/// </summary>
-		/// <remarks>
-		/// Sample request:
-		/// GET /api/Movies
-		/// </remarks>
-		/// <response code="200">The movies.</response>
+		/// Retrieves a list of cars.
+		/// <response code="200">The cars.</response>
 		[HttpGet]
 		public async Task<ActionResult<IEnumerable<CarViewModel>>> GetCars()
 		{
@@ -50,15 +45,11 @@ namespace CarShop.Controllers
 		}
 
 		/// <summary>
-		/// Retrieves a movie by ID, including its comments.
+		/// Retrieves a car by ID, including its reviews.
 		/// </summary>
-		/// <remarks>
-		/// Sample request:
-		/// GET api/Movies/5/Comments
-		/// </remarks>
-		/// <param name="id">The movie ID</param>
-		/// <response code="200">The movie.</response>
-		/// <response code="404">If the movie is not found.</response>
+		/// <param name="id">The car ID</param>
+		/// <response code="200">The car.</response>
+		/// <response code="404">If the car is not found.</response>
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[HttpGet("{id}/Reviews")]
@@ -87,15 +78,11 @@ namespace CarShop.Controllers
 		}
 
 		/// <summary>
-		/// Retrieves a movie by ID.
+		/// Retrieves a car by ID.
 		/// </summary>
-		/// <remarks>
-		/// Sample request:
-		/// GET api/Movies/5
-		/// </remarks>
-		/// <param name="id">The movie ID</param>
-		/// <response code="200">The movie.</response>
-		/// <response code="404">If the movie is not found.</response>
+		/// <param name="id">The car ID</param>
+		/// <response code="200">The car.</response>
+		/// <response code="404">If the car is not found.</response>
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[HttpGet("{id}")]
@@ -113,28 +100,9 @@ namespace CarShop.Controllers
 		}
 
 		/// <summary>
-		/// Updates a movie.
-		/// </summary>
-		/// <remarks>
-		/// Sample request:
-		///
-		/// PUT /api/Movies/5
-		/// {
-		///		"id": 5
-		///    "title": "Title",
-		///    "description": "Description!",
-		///    "genre": "Comedy",
-		///    "durationMinutes": 20,
-		///    "releaseYear": 2021,
-		///    "director": "Some Director",
-		///    "addedAt": "2021-08-10",
-		///    "rating": 2,
-		///    "watched": true
-		/// }
-		///
-		/// </remarks>
-		/// <param name="id">The movie ID</param>
-		/// <param name="movie">The movie body.</param>
+		/// Updates a Car.
+		/// <param name="id">The car ID</param>
+		/// <param name="car">The car body.</param>
 		/// <response code="204">If the item was successfully added.</response>
 		/// <response code="400">If the ID in the URL doesn't match the one in the body.</response>
 		/// <response code="404">If the item is not found.</response>
@@ -166,21 +134,19 @@ namespace CarShop.Controllers
 		}
 
 		/// <summary>
-		/// Updates a movie comment.
+		/// Updates a car review.
 		/// </summary>
 		/// <remarks>
 		/// Sample request:
-		///
-		/// PUT: api/Movies/1/Comments/2
+		/// POST /api/Car/3/Reviews
 		/// {
-		///    "text": "some comment",
-		///    "important": false,
-		///    "movieId": 3,
-		/// }
-		///
+		///		"Id":4,
+		///    "Content": "some text",
+		///    "DateTime": "2021-07-02T10:50:00",
+		///    "carId": 3,
 		/// </remarks>
-		/// <param name="commentId">The comment ID</param>
-		/// <param name="comment">The comment body</param>
+		/// <param name="reviewId">The review ID</param>
+		/// <param name="review">The review body</param>
 		/// <response code="204">If the item was successfully added.</response>
 		/// <response code="400">If the ID in the URL doesn't match the one in the body.</response>
 		/// <response code="404">If the item is not found.</response>
@@ -217,28 +183,11 @@ namespace CarShop.Controllers
 
 		// POST: api/Movies
 		/// <summary>
-		/// Creates a movie.
+		/// Creates a car.
 		/// </summary>
-		/// <remarks>
-		/// Sample request:
-		///
-		/// POST /api/Movies
-		/// {
-		///    "title": "Title",
-		///    "description": "Description!",
-		///    "genre": "Comedy",
-		///    "durationMinutes": 20,
-		///    "releaseYear": 2021,
-		///    "director": "Some Director",
-		///    "addedAt": "2021-08-10",
-		///    "rating": 2,
-		///    "watched": true
-		/// }
-		///
-		/// </remarks>
-		/// <param name="movie"></param>
+		/// <param name="car"></param>
 		/// <response code="201">Returns the newly created item</response>
-		/// <response code="400">If the item is null or the rating is not a value between 1 and 10.</response>
+		/// <response code="400">If the item is null</response>
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[HttpPost]
@@ -256,23 +205,12 @@ namespace CarShop.Controllers
 		}
 
 		/// <summary>
-		/// Creates a movie comment.
+		/// Creates a car review.
 		/// </summary>
-		/// <remarks>
-		/// Sample request:
-		///
-		/// POST /api/Movies/3/Comments
-		/// {
-		///    "text": "some comment",
-		///    "important": false,
-		///    "movieId": 3,
-		/// }
-		///
-		/// </remarks>
-		/// <param name="id">The movie ID</param>
-		/// <param name="comment">The comment body</param>
+		/// <param name="id">The car ID</param>
+		/// <param name="review">The review body</param>
 		/// <response code="200">If the item was successfully added.</response>
-		/// <response code="404">If movie is not found.</response>  
+		/// <response code="404">If car is not found.</response>  
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[HttpPost("{id}/Reviews")]
@@ -288,19 +226,12 @@ namespace CarShop.Controllers
 			return StatusCode(500);
 		}
 
-		// DELETE: api/Movies/5
 		/// <summary>
-		/// Deletes a movie.
+		/// Deletes a car.
 		/// </summary>
-		/// <remarks>
-		/// Sample request:
-		///
-		/// DELETE api/Movies/1
-		///
-		/// </remarks>
 		/// <param name="id"></param>
 		/// <response code="204">No content if successful.</response>
-		/// <response code="404">If the movie doesn't exist.</response>  
+		/// <response code="404">If the car doesn't exist.</response>  
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
 		[HttpDelete("{id}")]
@@ -324,22 +255,22 @@ namespace CarShop.Controllers
 		}
 
 
-		// DELETE: api/Movies/1/Comments/5
+		// DELETE: api/Car/1/Reviews/5
 		/// <summary>
-		/// Deletes a movie comment.
+		/// Deletes a car review.
 		/// </summary>
 		/// <remarks>
 		/// Sample request:
 		///
-		/// DELETE api/Movies/1/Comments/5
+		/// DELETE api/Car/1/Reviews/5
 		///
 		/// </remarks>
-		/// <param name="commentId"></param>
+		/// <param name="reviewId"></param>
 		/// <response code="204">No content if successful.</response>
-		/// <response code="404">If the comment doesn't exist.</response>  
+		/// <response code="404">If the review doesn't exist.</response>  
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		[HttpDelete("{id}/Reviews/{reviewsId}")]
+		[HttpDelete("{id}/Reviews/{reviewId}")]
 		[Authorize(AuthenticationSchemes = "Identity.Application,Bearer")]
 		public async Task<IActionResult> DeleteReview(int reviewId)
 		{

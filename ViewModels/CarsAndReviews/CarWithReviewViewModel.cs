@@ -14,6 +14,12 @@ namespace CarShop.ViewModels.CarsAndReviews
         public double Price { get; set; }
         public int MileAge { get; set; }
         public int Year { get; set; }
+        public double StartingBid { get; set; }
+        public DateTime BidStart { get; set; }
+        public DateTime BidEnd { get; set; }
+        public bool CarSold { get; set; }
+        public string Color { get; set; }
         public IEnumerable<ReviewViewModel> Reviews { get; set; }
+      
     }
 }

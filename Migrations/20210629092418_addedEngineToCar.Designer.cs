@@ -7,11 +7,11 @@ using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
-namespace CarShop.Data.Migrations
+namespace CarShop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20210618173956_add-car")]
-    partial class addcar
+    [Migration("20210629092418_addedEngineToCar")]
+    partial class addedEngineToCar
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -20,6 +20,21 @@ namespace CarShop.Data.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("BidCar", b =>
+                {
+                    b.Property<int>("BidsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CarsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BidsId", "CarsId");
+
+                    b.HasIndex("CarsId");
+
+                    b.ToTable("BidCar");
+                });
 
             modelBuilder.Entity("CarShop.Models.ApplicationUser", b =>
                 {
@@ -86,6 +101,32 @@ namespace CarShop.Data.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
+            modelBuilder.Entity("CarShop.Models.Bid", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<string>("ApplicationUserId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<double>("BidAmount")
+                        .HasColumnType("float");
+
+                    b.Property<DateTime>("BidDateTime")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("UserId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
+
+                    b.ToTable("Bids");
+                });
+
             modelBuilder.Entity("CarShop.Models.Car", b =>
                 {
                     b.Property<int>("Id")
@@ -93,7 +134,25 @@ namespace CarShop.Data.Migrations
                         .HasColumnType("int")
                         .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
 
+                    b.Property<DateTime>("BidEnd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime>("BidStart")
+                        .HasColumnType("datetime2");
+
+                    b.Property<int>("CarFuelType")
+                        .HasColumnType("int");
+
+                    b.Property<bool>("CarSold")
+                        .HasColumnType("bit");
+
+                    b.Property<string>("Color")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<string>("Description")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Engine")
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("MileAge")
@@ -105,12 +164,38 @@ namespace CarShop.Data.Migrations
                     b.Property<double>("Price")
                         .HasColumnType("float");
 
+                    b.Property<double>("StartingBid")
+                        .HasColumnType("float");
+
                     b.Property<int>("Year")
                         .HasColumnType("int");
 
                     b.HasKey("Id");
 
-                    b.ToTable("cars");
+                    b.ToTable("Cars");
+                });
+
+            modelBuilder.Entity("CarShop.Models.Review", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int")
+                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+                    b.Property<int>("CarId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Content")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateTime")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("CarId");
+
+                    b.ToTable("Reviews");
                 });
 
             modelBuilder.Entity("IdentityServer4.EntityFramework.Entities.DeviceFlowCodes", b =>
@@ -351,6 +436,41 @@ namespace CarShop.Data.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
+            modelBuilder.Entity("BidCar", b =>
+                {
+                    b.HasOne("CarShop.Models.Bid", null)
+                        .WithMany()
+                        .HasForeignKey("BidsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("CarShop.Models.Car", null)
+                        .WithMany()
+                        .HasForeignKey("CarsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
+            modelBuilder.Entity("CarShop.Models.Bid", b =>
+                {
+                    b.HasOne("CarShop.Models.ApplicationUser", "ApplicationUser")
+                        .WithMany("Bids")
+                        .HasForeignKey("ApplicationUserId");
+
+                    b.Navigation("ApplicationUser");
+                });
+
+            modelBuilder.Entity("CarShop.Models.Review", b =>
+                {
+                    b.HasOne("CarShop.Models.Car", "Car")
+                        .WithMany("Reviews")
+                        .HasForeignKey("CarId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Car");
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
                 {
                     b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
@@ -400,6 +520,16 @@ namespace CarShop.Data.Migrations
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("CarShop.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("Bids");
+                });
+
+            modelBuilder.Entity("CarShop.Models.Car", b =>
+                {
+                    b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618
         }

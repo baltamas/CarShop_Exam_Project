@@ -22,6 +22,11 @@ using CarShop.Services.AuthenticationService;
 using CarShop.Services.BidService;
 using CarShop.Services;
 using CarShop.Services.CarAndReviewService;
+using FluentValidation.AspNetCore;
+using FluentValidation;
+using CarShop.ViewModels.CarsAndReviews;
+using CarShop.Validators;
+using CarShop.ViewModels.Bids;
 
 namespace CarShop
 {
@@ -67,7 +72,9 @@ namespace CarShop
                     };
                 });
 
-            services.AddControllersWithViews().AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
+            services.AddControllersWithViews()
+                .AddFluentValidation()
+                .AddJsonOptions(options => options.JsonSerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter()));
             services.AddRazorPages();
             // In production, the Angular files will be served from this directory
             services.AddSpaStaticFiles(configuration =>
@@ -102,6 +109,9 @@ namespace CarShop
             services.AddTransient<IAuthManagementService, AuthManagementService>();
             services.AddTransient<IBidManagementService, BidManagementService>();
             services.AddTransient<ICarAndReviewManagementService, CarAndReviewManagementService>();
+            services.AddTransient<IValidator<CarViewModel>, CarValidator>();
+            services.AddTransient<IValidator<ReviewViewModel>, ReviewValidator>();
+            services.AddTransient<IValidator<BidForUserResponse>, BidValidator>();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

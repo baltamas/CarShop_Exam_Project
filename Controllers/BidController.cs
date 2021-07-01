@@ -18,7 +18,7 @@ using CarShop.ViewModels.Bids;
 namespace CarShop.Controllers
 {
     [ApiController]
-    [Route("api/[controller]")]
+    [Route("api/[controller]/[action]")]
     [Authorize(AuthenticationSchemes = "Identity.Application,Bearer")]
     public class BidsController : ControllerBase
     {
@@ -53,6 +53,19 @@ namespace CarShop.Controllers
             return _mapper.Map<List<Bid>, List<BidForUserResponse>>(bids);
         }
 
+        [HttpGet] 
+        public async Task<ActionResult<double>> GetBidForACar(int carId)
+        {
+            var bidAmountForACar = await _bidManagementService.GetBidForCar(carId);
+
+            if (bidAmountForACar.ResponseError == null)
+            {
+                return bidAmountForACar.ResponseOk;
+            }
+
+            return StatusCode(500);
+        }
+
         [HttpPost]
         public async Task<ActionResult> CreateBids(string userId, NewBidRequest newBidRequest)
         {
@@ -82,7 +95,7 @@ namespace CarShop.Controllers
                 return BadRequest("There is no bids list with this ID.");
             }
 
-            var serviceResponse = await _bidManagementService.UpdateBids(bids, updateBidForUser);
+            var serviceResponse = await _bidManagementService.UpdateBid(bids, updateBidForUser);
 
             if (serviceResponse.ResponseError == null)
             {

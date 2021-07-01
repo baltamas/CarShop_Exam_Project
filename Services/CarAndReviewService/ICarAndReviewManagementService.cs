@@ -1,5 +1,6 @@
 ﻿using CarShop.ErrorHandling;
 using CarShop.Models;
+using CarShop.ViewModels.AuctionEndViewModel;
 using CarShop.ViewModels.CarsAndReviews;
 using System;
 using System.Collections.Generic;
@@ -20,6 +21,7 @@ namespace CarShop.Services.CarAndReviewService
         public Task<ServiceResponse<Car, IEnumerable<EntityError>>> CreateCar(Car car);
         public Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteCar(int movieId);
         public Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteReview(int reviewId);
+        public Task<ServiceResponse<AuctionBill, IEnumerable<EntityError>>> CheckBidEnd(int carId);
 
         public bool ReviewExists(int id);
         bool CarExists(int id);

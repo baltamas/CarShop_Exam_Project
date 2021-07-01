@@ -9,8 +9,7 @@ namespace CarShop.ViewModels.Bids
     public class BidForUserResponse
     {
         public int Id { get; set; }
-        public ApplicationUserViewModel ApplicationUser { get; set; }
-        public List<CarViewModel> Cars { get; set; }
+        public CarViewModel Car { get; set; }
         public double BidAmount { get; set; }
         public DateTime BidDateTime { get; set; }
     }

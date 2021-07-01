@@ -16,6 +16,7 @@ namespace CarShop.Data
         public DbSet<Review> Reviews { get; set; }
         public DbSet<ApplicationUser> ApplicationUsers { get; set; }
         public DbSet<Bid> Bids { get; set; }
+        public DbSet<AuctionBill> AuctionBills { get; set; }
         public ApplicationDbContext(
             DbContextOptions options,
             IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)

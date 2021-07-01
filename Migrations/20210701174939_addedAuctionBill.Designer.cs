@@ -4,20 +4,37 @@ using CarShop.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace CarShop.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210701174939_addedAuctionBill")]
+    partial class addedAuctionBill
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
                 .HasAnnotation("Relational:MaxIdentifierLength", 128)
                 .HasAnnotation("ProductVersion", "5.0.7")
                 .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
+
+            modelBuilder.Entity("BidCar", b =>
+                {
+                    b.Property<int>("BidsId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CarsId")
+                        .HasColumnType("int");
+
+                    b.HasKey("BidsId", "CarsId");
+
+                    b.HasIndex("CarsId");
+
+                    b.ToTable("BidCar");
+                });
 
             modelBuilder.Entity("CarShop.Models.ApplicationUser", b =>
                 {
@@ -84,31 +101,6 @@ namespace CarShop.Migrations
                     b.ToTable("AspNetUsers");
                 });
 
-            modelBuilder.Entity("CarShop.Models.AuctionBill", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int")
-                        .HasAnnotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn);
-
-                    b.Property<int?>("CarId")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CarSoldDate")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("UserId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("CarId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AuctionBills");
-                });
-
             modelBuilder.Entity("CarShop.Models.Bid", b =>
                 {
                     b.Property<int>("Id")
@@ -125,17 +117,12 @@ namespace CarShop.Migrations
                     b.Property<DateTime>("BidDateTime")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("CarId")
-                        .HasColumnType("int");
-
                     b.Property<string>("UserId")
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
                     b.HasIndex("ApplicationUserId");
-
-                    b.HasIndex("CarId");
 
                     b.ToTable("Bids");
                 });
@@ -449,19 +436,19 @@ namespace CarShop.Migrations
                     b.ToTable("AspNetUserTokens");
                 });
 
-            modelBuilder.Entity("CarShop.Models.AuctionBill", b =>
+            modelBuilder.Entity("BidCar", b =>
                 {
-                    b.HasOne("CarShop.Models.Car", "Car")
+                    b.HasOne("CarShop.Models.Bid", null)
                         .WithMany()
-                        .HasForeignKey("CarId");
+                        .HasForeignKey("BidsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
 
-                    b.HasOne("CarShop.Models.ApplicationUser", "User")
+                    b.HasOne("CarShop.Models.Car", null)
                         .WithMany()
-                        .HasForeignKey("UserId");
-
-                    b.Navigation("Car");
-
-                    b.Navigation("User");
+                        .HasForeignKey("CarsId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("CarShop.Models.Bid", b =>
@@ -470,13 +457,7 @@ namespace CarShop.Migrations
                         .WithMany("Bids")
                         .HasForeignKey("ApplicationUserId");
 
-                    b.HasOne("CarShop.Models.Car", "Car")
-                        .WithMany("Bids")
-                        .HasForeignKey("CarId");
-
                     b.Navigation("ApplicationUser");
-
-                    b.Navigation("Car");
                 });
 
             modelBuilder.Entity("CarShop.Models.Review", b =>
@@ -548,8 +529,6 @@ namespace CarShop.Migrations
 
             modelBuilder.Entity("CarShop.Models.Car", b =>
                 {
-                    b.Navigation("Bids");
-
                     b.Navigation("Reviews");
                 });
 #pragma warning restore 612, 618

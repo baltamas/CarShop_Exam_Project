@@ -2,6 +2,7 @@
 using CarShop.Data;
 using CarShop.ErrorHandling;
 using CarShop.Models;
+using CarShop.ViewModels.AuctionEndViewModel;
 using CarShop.ViewModels.CarsAndReviews;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -202,6 +203,41 @@ namespace CarShop.Services.CarAndReviewService
 			{
 				return _context.Reviews.Any(e => e.Id == id);
 			}
+
+        public async Task<ServiceResponse<AuctionBill, IEnumerable<EntityError>>> CheckBidEnd(int carId)
+        {
+
+			var serviceResponse = new ServiceResponse<AuctionBill, IEnumerable<EntityError>>();
+
+
+			try
+			{
+				var endDate = _context.Cars.SingleOrDefault(c => c.Id == carId).BidEnd;
+				if (endDate > DateTime.Now)
+                {
+
+					var maxBid = _context.Bids.Where(b => b.Car.Id == carId).OrderByDescending(c => c.BidAmount).First();
+					var auctionBill = new AuctionBill();
+					var car = _context.Cars.SingleOrDefault(c => c.Id == carId);
+					var user = _context.ApplicationUsers.SingleOrDefault(a => a.Id == maxBid.UserId);
+					auctionBill.Car = car;
+					auctionBill.User = user;
+					auctionBill.CarSoldDate = DateTime.Now;
+					_context.AuctionBills.Add(auctionBill);
+
+					await _context.SaveChangesAsync();
+					serviceResponse.ResponseOk = auctionBill;
+                }
+
+			}
+			catch (Exception e)
+			{
+				var errors = new List<EntityError>();
+				errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
+			}
+
+			return serviceResponse;
 		}
+    }
 	}
 

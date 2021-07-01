@@ -22,21 +22,12 @@ namespace CarShop.Services.BidService
 
 		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> CreateBids(string userId, NewBidRequest newBidRequest)
 		{
-			List<Car> cars = new List<Car>();
-
-			newBidRequest.BidCarIds.ForEach(cid =>
-			{
-				var car = _context.Cars.Find(cid);
-				if (car != null)
-				{
-					cars.Add(car);
-				}
-			});
-
+			var car = _context.Cars.Find(newBidRequest.BidCarId);
+		
 			var bid = new Bid
 			{
 				UserId = userId,
-				Cars = cars,
+				Car = car,
 				BidAmount = newBidRequest.BidAmount,
 				BidDateTime = newBidRequest.BidDateTime
 			};
@@ -60,15 +51,14 @@ namespace CarShop.Services.BidService
 
 		public async Task<ServiceResponse<List<Bid>, IEnumerable<EntityError>>> GetBids(string userId)
 		{
-			var result = await _context.Bids.Where(b => b.ApplicationUser.Id == userId).Include(b => b.Cars).OrderByDescending(c => c.BidAmount).ToListAsync();
+			var result = await _context.Bids.Where(b => b.UserId == userId).Include(b => b.Car).OrderByDescending(c => c.BidAmount).ToListAsync();
 			var serviceResponse = new ServiceResponse<List<Bid>, IEnumerable<EntityError>>();
 			serviceResponse.ResponseOk = result;
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBids(Bid bids, UpdateBidForUser updateBidForUser)
+		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBid(Bid bids, UpdateBidForUser updateBidForUser)
 		{
-			bids.Cars = await _context.Cars.Where(c => updateBidForUser.CarIds.Contains(c.Id)).ToListAsync();
 			_context.Entry(bids).State = EntityState.Modified;
 			var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
 
@@ -118,6 +108,30 @@ namespace CarShop.Services.BidService
 		{
 			return _context.Bids.Any(e => e.Id == bidsId && e.ApplicationUser.Id == userId);
 		}
-	}
+
+        public async Task<ServiceResponse<double, IEnumerable<EntityError>>> GetBidForCar(int carId)
+        {
+		
+			var serviceResponse = new ServiceResponse<double, IEnumerable<EntityError>>();
+			try
+			{
+				var startBid = _context.Cars.Where(c => c.Id == carId).Sum(s => s.StartingBid);
+				var bidForCar = _context.Bids.Where(c => c.Car.Id == carId);
+				var value = await bidForCar.SumAsync(b => b.BidAmount); // return a task's result
+				serviceResponse.ResponseOk = value + startBid;
+
+			}
+			catch (Exception e)
+			{
+				var errors = new List<EntityError>();
+				errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
+			}
+
+			return serviceResponse;
+
+			
+
+        }
+    }
 }
 

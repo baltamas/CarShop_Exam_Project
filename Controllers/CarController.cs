@@ -15,10 +15,11 @@ using Microsoft.AspNetCore.Authorization;
 using System.Security.Claims;
 using CarShop.Services;
 using CarShop.ViewModels.CarsAndReviews;
+using CarShop.ViewModels.AuctionEndViewModel;
 
 namespace CarShop.Controllers
 {
-	[Route("api/[controller]")]
+	[Route("api/[controller]/[action]")]
 	[ApiController]
 	[Produces("application/json")]
 	public class CarController : ControllerBase
@@ -289,6 +290,23 @@ namespace CarShop.Controllers
 
 			return StatusCode(500);
 		}
+
+		[HttpPut]
+		public async Task <ActionResult<AuctionBillViewModel>> CheckBidEnd(int carId)
+        {
+			
+			var result = await _carAndReviewManagementService.CheckBidEnd(carId);
+
+			var auctionBill = result.ResponseOk;
+			var auctionBillViewModel = new AuctionBillViewModel(auctionBill);
+			if (result.ResponseError == null)
+            {
+				return auctionBillViewModel;
+            }
+
+			return StatusCode(500);
+        }
+
 	}
 }
 

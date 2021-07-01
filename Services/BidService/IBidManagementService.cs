@@ -13,8 +13,9 @@ namespace CarShop.Services.BidService
 		Task<ServiceResponse<List<Bid>, IEnumerable<EntityError>>> GetBids(string userId);
 		Task<ServiceResponse<Bid, IEnumerable<EntityError>>> GetBid(string userId, int id);
 		Task<ServiceResponse<Bid, IEnumerable<EntityError>>> CreateBids(string userId, NewBidRequest newBidRequest);
-		Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBids(Bid bids, UpdateBidForUser updateBidForUser);
+		Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBid(Bid bids, UpdateBidForUser updateBidForUser);
 		Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteBids(int id);
 		bool BidsExists(string userId, int favouritesId);
-	}
+        Task<ServiceResponse<double, IEnumerable<EntityError>>> GetBidForCar(int carId);
+    }
 }

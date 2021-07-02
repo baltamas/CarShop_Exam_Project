@@ -81,53 +81,6 @@ namespace CarShop.Controllers
             return StatusCode(500);
         }
 
-        [HttpPut]
-        public async Task<ActionResult> UpdateFavourites(UpdateBidForUser updateBidForUser)
-        {
-            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-            var bidsWithIdResponse = await _bidManagementService.GetBid(user.Id, updateBidForUser.Id);
-
-            Bid bids = bidsWithIdResponse.ResponseOk;
-
-            if (bids == null)
-            {
-                return BadRequest("There is no bids list with this ID.");
-            }
-
-            var serviceResponse = await _bidManagementService.UpdateBid(bids, updateBidForUser);
-
-            if (serviceResponse.ResponseError == null)
-            {
-                return Ok();
-            }
-
-            return StatusCode(500);
-        }
-
-        [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteBids(int id)
-        {
-            var user = await _userManager.FindByNameAsync(User.FindFirst(ClaimTypes.NameIdentifier).Value);
-
-            var bidsResponse = await _bidManagementService.GetBid(user.Id, id);
-            var bids = bidsResponse.ResponseOk;
-
-            if (bids == null)
-            {
-                return NotFound();
-            }
-
-            var result = await _bidManagementService.DeleteBids(id);
-
-            if (result.ResponseError == null)
-            {
-                return NoContent();
-            }
-
-
-            return StatusCode(500);
-        }
     }
 
 }

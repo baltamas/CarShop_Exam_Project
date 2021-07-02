@@ -57,50 +57,11 @@ namespace CarShop.Services.BidService
 			return serviceResponse;
 		}
 
-		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> UpdateBid(Bid bids, UpdateBidForUser updateBidForUser)
-		{
-			_context.Entry(bids).State = EntityState.Modified;
-			var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
-
-			try
-			{
-				await _context.SaveChangesAsync();
-				serviceResponse.ResponseOk = bids;
-			}
-			catch (Exception e)
-			{
-				var errors = new List<EntityError>();
-				errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
-			}
-
-			return serviceResponse;
-		}
-
 		public async Task<ServiceResponse<Bid, IEnumerable<EntityError>>> GetBid(string userId, int id)
 		{
 			var result = await _context.Bids.Where(b => b.Id == id && b.ApplicationUser.Id == userId).FirstOrDefaultAsync();
 			var serviceResponse = new ServiceResponse<Bid, IEnumerable<EntityError>>();
 			serviceResponse.ResponseOk = result;
-			return serviceResponse;
-		}
-
-		public async Task<ServiceResponse<bool, IEnumerable<EntityError>>> DeleteBids(int id)
-		{
-			var serviceResponse = new ServiceResponse<bool, IEnumerable<EntityError>>();
-
-			try
-			{
-				var bid = await _context.Bids.FindAsync(id);
-				_context.Bids.Remove(bid);
-				await _context.SaveChangesAsync();
-				serviceResponse.ResponseOk = true;
-			}
-			catch (Exception e)
-			{
-				var errors = new List<EntityError>();
-				errors.Add(new EntityError { ErrorType = e.GetType().ToString(), Message = e.Message });
-			}
-
 			return serviceResponse;
 		}
 
@@ -117,7 +78,7 @@ namespace CarShop.Services.BidService
 			{
 				var startBid = _context.Cars.Where(c => c.Id == carId).Sum(s => s.StartingBid);
 				var bidForCar = _context.Bids.Where(c => c.Car.Id == carId);
-				var value = await bidForCar.SumAsync(b => b.BidAmount); // return a task's result
+				var value = await bidForCar.SumAsync(b => b.BidAmount);
 				serviceResponse.ResponseOk = value + startBid;
 
 			}

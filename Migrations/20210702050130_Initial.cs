@@ -59,7 +59,11 @@ namespace CarShop.Migrations
                     Year = table.Column<int>(type: "int", nullable: false),
                     CarFuelType = table.Column<int>(type: "int", nullable: false),
                     StartingBid = table.Column<double>(type: "float", nullable: false),
-                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    BidStart = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    BidEnd = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    CarSold = table.Column<bool>(type: "bit", nullable: false),
+                    Color = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    Engine = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -212,6 +216,33 @@ namespace CarShop.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AuctionBills",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    CarId = table.Column<int>(type: "int", nullable: true),
+                    UserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
+                    CarSoldDate = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AuctionBills", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_AuctionBills_AspNetUsers_UserId",
+                        column: x => x.UserId,
+                        principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_AuctionBills_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Bids",
                 columns: table => new
                 {
@@ -219,6 +250,7 @@ namespace CarShop.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ApplicationUserId = table.Column<string>(type: "nvarchar(450)", nullable: true),
                     UserId = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    CarId = table.Column<int>(type: "int", nullable: true),
                     BidAmount = table.Column<double>(type: "float", nullable: false),
                     BidDateTime = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
@@ -229,6 +261,12 @@ namespace CarShop.Migrations
                         name: "FK_Bids_AspNetUsers_ApplicationUserId",
                         column: x => x.ApplicationUserId,
                         principalTable: "AspNetUsers",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                    table.ForeignKey(
+                        name: "FK_Bids_Cars_CarId",
+                        column: x => x.CarId,
+                        principalTable: "Cars",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                 });
@@ -249,30 +287,6 @@ namespace CarShop.Migrations
                     table.ForeignKey(
                         name: "FK_Reviews_Cars_CarId",
                         column: x => x.CarId,
-                        principalTable: "Cars",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "BidCar",
-                columns: table => new
-                {
-                    BidsId = table.Column<int>(type: "int", nullable: false),
-                    CarsId = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_BidCar", x => new { x.BidsId, x.CarsId });
-                    table.ForeignKey(
-                        name: "FK_BidCar_Bids_BidsId",
-                        column: x => x.BidsId,
-                        principalTable: "Bids",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_BidCar_Cars_CarsId",
-                        column: x => x.CarsId,
                         principalTable: "Cars",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -318,14 +332,24 @@ namespace CarShop.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_BidCar_CarsId",
-                table: "BidCar",
-                column: "CarsId");
+                name: "IX_AuctionBills_CarId",
+                table: "AuctionBills",
+                column: "CarId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_AuctionBills_UserId",
+                table: "AuctionBills",
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bids_ApplicationUserId",
                 table: "Bids",
                 column: "ApplicationUserId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_Bids_CarId",
+                table: "Bids",
+                column: "CarId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_DeviceCodes_DeviceCode",
@@ -377,7 +401,10 @@ namespace CarShop.Migrations
                 name: "AspNetUserTokens");
 
             migrationBuilder.DropTable(
-                name: "BidCar");
+                name: "AuctionBills");
+
+            migrationBuilder.DropTable(
+                name: "Bids");
 
             migrationBuilder.DropTable(
                 name: "DeviceCodes");
@@ -392,13 +419,10 @@ namespace CarShop.Migrations
                 name: "AspNetRoles");
 
             migrationBuilder.DropTable(
-                name: "Bids");
+                name: "AspNetUsers");
 
             migrationBuilder.DropTable(
                 name: "Cars");
-
-            migrationBuilder.DropTable(
-                name: "AspNetUsers");
         }
     }
 }

@@ -53,7 +53,7 @@ namespace CarShop.Controllers
 		/// <response code="404">If the car is not found.</response>
 		[ProducesResponseType(StatusCodes.Status200OK)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		[HttpGet("{id}/Reviews")]
+		[HttpGet]
 		public async Task<ActionResult<CarWithReviewViewModel>> GetReviewsForCar(int id)
 		{
 			if (!_carAndReviewManagementService.CarExists(id))
@@ -154,7 +154,7 @@ namespace CarShop.Controllers
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		[HttpPut("{id}/Reviews/{reviewId}")]
+		[HttpPut]
 		public async Task<IActionResult> PutReview(int reviewId, ReviewViewModel review)
 		{
 			if (reviewId != review.Id)
@@ -214,7 +214,6 @@ namespace CarShop.Controllers
 		/// <response code="404">If car is not found.</response>  
 		[ProducesResponseType(StatusCodes.Status201Created)]
 		[ProducesResponseType(StatusCodes.Status400BadRequest)]
-		[HttpPost("{id}/Reviews")]
 		public async Task<IActionResult> PostReviewForCar(int id, ReviewViewModel review)
 		{
 			var reviewResponse = await _carAndReviewManagementService.AddReviewToCar(id, _mapper.Map<Review>(review));
@@ -271,7 +270,7 @@ namespace CarShop.Controllers
 		/// <response code="404">If the review doesn't exist.</response>  
 		[ProducesResponseType(StatusCodes.Status204NoContent)]
 		[ProducesResponseType(StatusCodes.Status404NotFound)]
-		[HttpDelete("{id}/Reviews/{reviewId}")]
+		[HttpDelete]
 		[Authorize(AuthenticationSchemes = "Identity.Application,Bearer")]
 		public async Task<IActionResult> DeleteReview(int reviewId)
 		{
